@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+var _client = &http.Client{}
+
 func Post(url string, payload interface{}) (*http.Response, error) {
 	body, err := body(payload)
 	if err != nil {
@@ -27,9 +29,8 @@ func Post(url string, payload interface{}) (*http.Response, error) {
 	return res, nil
 }
 
-func send(req *http.Request) (*http.Response, error) {
-	client := &http.Client{}
-	res, err := client.Do(req)
+func send(req *http.Request) (*http.Response, error) {	
+	res, err := _client.Do(req)
 	if err != nil {
 		return nil, errors.New("could not send request")
 	}
