@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"packages/gateway/_http"
+	"packages/gateway/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,11 +12,16 @@ import (
 func main() {
 	r := gin.Default()
 	
-	r.Use(validateCertificate())
+	r.Use(ValidateCertificateMiddleware())
 
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
 
+	_auth := v1.Group("/auth")
+	_auth.POST("/login", auth.Login)
+	_auth.POST("/signup", auth.Signup)
+	_auth.GET("/verify", auth.Verify)
+	
 	v1.GET("/ping", ping)
 	r.Run("localhost:8080")
 }
@@ -31,8 +37,7 @@ type BaseBodyDto struct {
 	Certificate PublicCertificate 
 }
 
-func validateCertificate() gin.HandlerFunc {
-	
+func ValidateCertificateMiddleware() gin.HandlerFunc {
 	return func (c *gin.Context) {
 		var body BaseBodyDto
 		if err := c.ShouldBindJSON(&body); err != nil {
