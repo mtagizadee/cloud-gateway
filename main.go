@@ -5,6 +5,7 @@ import (
 
 	"packages/gateway/_http"
 	"packages/gateway/auth"
+	"packages/gateway/common"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,39 +13,28 @@ import (
 func main() {
 	r := gin.Default()
 	
-	r.Use(ValidateCertificateMiddleware())
-
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
 
 	_auth := v1.Group("/auth")
-	_auth.POST("/login", auth.Login)
+	_auth.POST("/login", ValidateCertificateMiddleware[auth.LoginDto](), auth.Login)
 	_auth.POST("/signup", auth.Signup)
 	_auth.GET("/verify", auth.Verify)
-	
-	v1.GET("/ping", ping)
+
+	v1.GET("/ping", ValidateCertificateMiddleware[interface{}](), ping)
 	r.Run("localhost:8080")
 }
 
-type PublicCertificate struct {
-	AccessToken string `binding:"required"`
-	ApplicationId int `binding:"required"`
-  CertificateId string `binding:"required"`
-  CreatedAt string `binding:"required"`
-}
-
-type BaseBodyDto struct {
-	Certificate PublicCertificate 
-}
-
-func ValidateCertificateMiddleware() gin.HandlerFunc {
+func ValidateCertificateMiddleware[T comparable]() gin.HandlerFunc {
 	return func (c *gin.Context) {
-		var body BaseBodyDto
+		var body common.BaseBodyDto[T]
 		if err := c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Missing certificate"})
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
+
+		c.Set("body", body.Data)
 
 		res, err := _http.Post("http://localhost:3000/api/v1/certificates/verify", body.Certificate)
 		if err != nil {
