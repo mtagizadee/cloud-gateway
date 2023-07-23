@@ -19,7 +19,7 @@ func main() {
 	_auth := v1.Group("/auth")
 	_auth.POST("/login", ValidateCertificateMiddleware[auth.LoginDto](), auth.Login)
 	_auth.POST("/signup", ValidateCertificateMiddleware[auth.SignupDto](), auth.Signup)
-	_auth.GET("/verify", auth.Verify)
+	_auth.POST("/verify", ValidateCertificateMiddleware[auth.VerifyDto](),  auth.Verify)
 
 	v1.GET("/ping", ValidateCertificateMiddleware[interface{}](), ping)
 	r.Run("localhost:8080")
@@ -36,7 +36,7 @@ func ValidateCertificateMiddleware[T comparable]() gin.HandlerFunc {
 
 		c.Set("body", body.Data)
 
-		res, err := _http.Post("http://localhost:3000/api/v1/certificates/verify", body.Certificate)
+		res, err := _http.Post("http://localhost:3000/api/v1/certificates/verify", body.Certificate, map[string]string{})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			c.Abort()

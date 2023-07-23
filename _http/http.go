@@ -10,13 +10,13 @@ import (
 
 var _client = &http.Client{}
 
-func Post(url string, payload interface{}) (*http.Response, error) {
+func Post(url string, payload interface{}, headers map[string]string) (*http.Response, error) {
 	body, err := body(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := setup("POST", url, body)
+	req, err := setup("POST", url, body, headers)
 	if err != nil {
 		return nil, err
 	}
@@ -38,13 +38,17 @@ func send(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func setup(method string, url string, body *bytes.Buffer) (*http.Request, error) {
+func setup(method string, url string, body *bytes.Buffer, headers map[string]string) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, errors.New("could not create request")
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	// iterate over headers add add header
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
 
 	return req, nil
 }

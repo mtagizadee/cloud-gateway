@@ -18,7 +18,7 @@ type LoginDto struct {
 func Login(c *gin.Context) {
 	body := c.MustGet("body").(LoginDto)
 	
-	res, err := _http.Post(base + "/login", body);
+	res, err := _http.Post(base + "/login", body, map[string]string{});
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -64,7 +64,7 @@ func Signup(c *gin.Context) {
 		Password: body.Password,
 		AppId: appId,
 		CompanyId: companyId,
-	})
+	}, map[string]string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -84,6 +84,34 @@ func Signup(c *gin.Context) {
 	c.JSON(http.StatusOK, resBody)
 }
 
-func Verify(c *gin.Context) {}
+type VerifyDto struct {
+	AccessToken string `binding:"required"`
+}
+
+func Verify(c *gin.Context) {
+	body := c.MustGet("body").(VerifyDto)
+
+	fmt.Println(body.AccessToken)
+	res, err := _http.Post(base + "/verify", body, map[string]string{
+		"Authorization": fmt.Sprintf("Bearer %s", body.AccessToken),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resBody, err := _http.Read(res)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if res.StatusCode != http.StatusOK {
+		c.JSON(http.StatusForbidden, gin.H{"error": resBody["error"]})
+		return
+	}
+
+	c.JSON(http.StatusOK, resBody)
+}
 
 func Ping(c *gin.Context) {}
