@@ -18,7 +18,7 @@ func main() {
 
 	_auth := v1.Group("/auth")
 	_auth.POST("/login", ValidateCertificateMiddleware[auth.LoginDto](), auth.Login)
-	_auth.POST("/signup", auth.Signup)
+	_auth.POST("/signup", ValidateCertificateMiddleware[auth.SignupDto](), auth.Signup)
 	_auth.GET("/verify", auth.Verify)
 
 	v1.GET("/ping", ValidateCertificateMiddleware[interface{}](), ping)
