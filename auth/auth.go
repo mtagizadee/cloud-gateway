@@ -114,4 +114,23 @@ func Verify(c *gin.Context) {
 	c.JSON(http.StatusOK, resBody)
 }
 
-func Ping(c *gin.Context) {}
+func Ping(c *gin.Context) {
+	res, err := _http.Get(base + "/ping", map[string]string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}	
+
+	resBody, err := _http.Read(res)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if res.StatusCode != http.StatusOK {
+		c.JSON(http.StatusForbidden, gin.H{"error": resBody["error"]})
+		return
+	}
+
+	c.JSON(http.StatusOK, resBody)
+}

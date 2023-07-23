@@ -20,6 +20,7 @@ func main() {
 	_auth.POST("/login", ValidateCertificateMiddleware[auth.LoginDto](), auth.Login)
 	_auth.POST("/signup", ValidateCertificateMiddleware[auth.SignupDto](), auth.Signup)
 	_auth.POST("/verify", ValidateCertificateMiddleware[auth.VerifyDto](),  auth.Verify)
+	_auth.GET("/ping", ValidateCertificateMiddleware[interface{}](), auth.Ping)
 
 	v1.GET("/ping", ValidateCertificateMiddleware[interface{}](), ping)
 	r.Run("localhost:8080")

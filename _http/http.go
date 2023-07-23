@@ -29,6 +29,21 @@ func Post(url string, payload interface{}, headers map[string]string) (*http.Res
 	return res, nil
 }
 
+func Get(url string, headers map[string]string) (*http.Response, error) {
+	req, err := setup("GET", url, nil, headers)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := send(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+
 func send(req *http.Request) (*http.Response, error) {	
 	res, err := _client.Do(req)
 	if err != nil {
@@ -39,7 +54,15 @@ func send(req *http.Request) (*http.Response, error) {
 }
 
 func setup(method string, url string, body *bytes.Buffer, headers map[string]string) (*http.Request, error) {
-	req, err := http.NewRequest(method, url, body)
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		req, err = http.NewRequest(method, url, body)
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+	}
+	
 	if err != nil {
 		return nil, errors.New("could not create request")
 	}
